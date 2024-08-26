@@ -30,7 +30,7 @@ def main(question_model, question_count, test_models, test_count, types):
     question_count = question_count or config.get("question_count")
     test_models = test_models or config.get("test_models")
     test_count = test_count or config.get("test_count")
-    types = types or config.get("types")
+    types = [types] or config.get("types")
     result_csv_path = config.get("result_csv_path")
 
     # dataset.csv
@@ -58,7 +58,6 @@ def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_pat
                     # get answer using an Agent or Function --------------------------------------------------------------------------------------------------------------
                     if type == "function" :
                         answer = db_query_func(question=key[1], table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
-                        print("F",answer)
                     elif type == "agent":
                         agent = akasha.test_agent(verbose=True, tools=[db_query_tool], model=test_model) 
                         question = f'''
@@ -67,7 +66,8 @@ def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_pat
                                 '''
                                 # let akasha agent to consider the rest of the process       
                         answer = agent(question, messages=[])
-                        print("A",answer)
+                    else:
+                        print('wrong type')
 
                     # end time
                     end_time = time.time()
@@ -108,7 +108,6 @@ def generate_questions(dataset_path, files, question_model, question_count, conn
         q_response = ak.ask_self(prompt=f"這是一份table名為{table_name}，以此為基礎幫我產出一個問題，不可與{id_q_a}中的相同", info=data)
         model_answer = db_query_func(question=q_response, table_name=table_name, simplified_answer=True, connection_config=connection_config, model=question_model)
         id_q_a.append([qtime, q_response,model_answer])
-    print(id_q_a)
     return id_q_a
 
 def token():
