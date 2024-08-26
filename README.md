@@ -26,7 +26,20 @@ AZURE_API_TYPE=azure
 AZURE_API_VERSION=2023-05-15
 ```
 ### config.json
-可根據使用者需求，至`config.json`調整多項設定，包含:
+將環境變數儲存於 `config.json` 檔案中，並將該檔案放置於專案的根目錄下。
+```json
+{
+  "result_csv_path":"./result.csv",
+  "question_model":"openai:gpt-4",
+  "question_count": 1,
+  "test_models":["openai:gpt-35-turbo","openai:gpt-4"],
+  "test_count": 2,
+  "types": ["function","agent"],
+  "dataset_path": "./dataset"
+}
+```
+
+
 | 欄位         | 說明 | 預設值 |
 | ---                  | ---------------------------- | ---    |
 | `"result_csv_path"`   | 測試結果儲存位置與檔案名稱     | `"./result.csv"` |
