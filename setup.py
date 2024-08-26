@@ -56,6 +56,6 @@ setup(
         "llama-cpp-python==0.2.6",
     ]},
     packages=["pluslab"],
-    entry_points={"console_scripts": ["pluslab = pluslab.pluslab:main"]},
+    entry_points={"console_scripts": ["pluslab=pluslab.pluslab:main"]},
     python_requires=">=3.8",
 )
