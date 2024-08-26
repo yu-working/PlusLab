@@ -1,4 +1,4 @@
-# Plus-lab
+# PlusLab
 
 > 一個基於測試Akasha-plus應用於查詢資料庫的工具，可以幫助使用者快速的開始進行測試。
 
