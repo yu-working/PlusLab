@@ -24,7 +24,7 @@ def load_config(config_file_path):
 @click.option('--type', 'types', help='Select function, agent, or all to determine the type of test.')
 def main(question_model, question_count, test_models, test_count, types):
     sys.stdout = open('output.txt', 'w')
-    config = load_config('./data/config.json')
+    config = load_config('./config.json')
     ask = 0
     question_model = question_model or config.get("question_model")
     question_count = question_count or config.get("question_count")
