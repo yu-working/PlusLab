@@ -43,7 +43,7 @@ else:
     install_requires.append('opencc==1.1.6')
 
 setup(
-    name="PlusLab",
+    name="pluslab",
     version="0.1",
     description="A model testing tool based on Akasha-plus.",
     long_description=long_description,
@@ -55,7 +55,7 @@ setup(
     extra_requires={'llama-cpp': [
         "llama-cpp-python==0.2.6",
     ]},
-    packages=["PlusLab"],
-    entry_points={"console_scripts": ["pluslab = PlusLab.pluslab:main"]},
+    packages=["pluslab"],
+    entry_points={"console_scripts": ["pluslab = pluslab.pluslab:main"]},
     python_requires=">=3.8",
 )
