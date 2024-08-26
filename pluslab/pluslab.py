@@ -159,7 +159,7 @@ def create_or_update_table(dataset_path, files, database='database.db'):
         sys.exit()
     for file in files:
         path = f"{dataset_path}/{file}"
-        dataset_df = pd.read_csv(path, encoding='utf-8-sig')
+        dataset_df = pd.read_csv(path, encoding='utf-8-sig', on_bad_lines='warn')
         columns = dataset_df.columns.tolist()
         table_name = file.replace(".csv", "")  
         columns_with_types = ', '.join([f'"{col}" TEXT' for col in columns])
