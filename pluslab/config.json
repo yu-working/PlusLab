@@ -1,0 +1,9 @@
+{
+  "result_csv_path":"./result.csv",
+  "question_model":"openai:gpt-4",
+  "question_count": 1,
+  "test_models":["openai:gpt-35-turbo","openai:gpt-4"],
+  "test_count": 2,
+  "types": ["function","agent"],
+  "dataset_path": "../dataset"
+}
