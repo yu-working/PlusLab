@@ -51,11 +51,10 @@ AZURE_API_VERSION=2023-05-15
 > **注意：請確保`.env`與`config.json`欄位名稱和欄位順序與上述格式一致。**
 
 ### 資料夾說明
-
-- `config.json` - 測試設定檔
-- `.env` - 環境變數設定檔
 - `data` - 資料集放置處
     - `dataset.csv` - 測試資料集
+- `config.json` - 測試設定檔
+- `.env` - 環境變數設定檔
 
 ### 移動到專案內
 
