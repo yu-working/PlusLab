@@ -45,7 +45,7 @@ else:
 setup(
     name="PlusLab",
     version="0.1",
-    description="A model testing tool based on Akasha-plus.",
+    description=" A tool specifically designed for testing and comparing the performance of language models.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="cai yu tsai",

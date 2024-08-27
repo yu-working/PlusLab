@@ -1,8 +1,12 @@
 # PlusLab
 
-> 一個基於測試Akasha-plus應用於查詢資料庫的工具，可以幫助使用者快速的開始進行測試。
+> PlusLab 是一個專門設計用於測試和比較語言模型性能的工具。
 
-- [更多關於Akasha-plus](https://pypi.org/project/akasha-plus/)
+> PlusLab允許用戶指定問題生成模型和測試模型，並進行多次測試，以評估模型在不同設定下的表現。PlusLab 基於 akasha-plus 套件開發，提供靈活的配置選項來定義問題生成和測試模型的設置。通過使用 PlusLab，用戶可以方便地生成問題，運行模型測試，並有效地存儲和分析測試結果。
+
+- [更多關於akasha-plus](https://pypi.org/project/akasha-plus/)
+
+
 
 ## 安裝
 > 請務必依據你的專案來調整內容。
@@ -38,23 +42,23 @@ AZURE_API_VERSION=2023-05-15
   "dataset_path": "./dataset"
 }
 ```
-
 | 欄位         | 說明 | 預設值 |
 | ---                  | ---------------------------- | ---    |
 | `"result_csv_path"`   | 測試結果儲存位置與檔案名稱     | `"./result.csv"` |
 | `"question_model"`    | 出題語言模型                  | `"openai:gpt-4"`|
 | `"question_count"`    | 問題數                       | `1`|
-| `"test_model"`        | 測試模型                     | `["openai:gpt-35-turbo","openai:gpt-4"]` |
+| `"test_models"`        | 測試模行列表                     | `["openai:gpt-35-turbo","openai:gpt-4"]` |
 | `"test_count"`        | 每題各組合測試次數            | `5`|
 | `"function_or_agent"` | 使用function或是agent進行測試| `["function","agent"]`|
 
 > **注意：請確保`.env`與`config.json`欄位名稱和欄位順序與上述格式一致。**
 
 ### 資料夾說明
-- `data` - 資料集放置處
-    - `dataset.csv` - 測試資料集
+
 - `config.json` - 測試設定檔
 - `.env` - 環境變數設定檔
+- `data` - 資料集放置處
+    - `dataset.csv` - 測試資料集
 
 ### 移動到專案內
 
@@ -73,21 +77,24 @@ pluslab
 
 ### 運行專案
 ```
-# 測試所有模型
+# 測試所有組合
 pluslab
 ```
-可用指令參數
+ - **可用指令參數**
 ```
-# --model : 輸入欲使用的模型，或是入`all`以全選，預設為openai:gpt-3.5-turbo
-pluslab --model your-model
+# --question-model : 選擇生成問題的模型
+pluslab --question-model openai:gpt-4
 
-# --fa : 選擇使用function、agent，或是入`ALL`以全選，預設為function
-pluslab --fa agent
-
-# --question : 指定生成問題數目，預設為1個
+# --question-count : 指定生成問題數目
 pluslab --question 5
 
-# --count : 指定單個組合的測試次數，預設為5次
+# --test-model : 選擇單一模型進行測試
+pluslab --model your-model
+
+# --type : 選擇使用function、agent
+pluslab --type agent
+
+# --test-count : 指定單個組合的測試次數，預設為5次
 pluslab --count 10
 ```
 
