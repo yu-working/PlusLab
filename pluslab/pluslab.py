@@ -76,7 +76,10 @@ def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_pat
                     now_tokens = token()
                     tokens = now_tokens - temp_tokens
                     #y/n
-                    yn = verify_response(key, answer)
+                    if answer is not None
+                        yn = verify_response(key, answer)
+                    else:
+                        print("Answer generation failed.")
                     # data
                     results.append({
                                 '組合':test_model + " + " + type,
