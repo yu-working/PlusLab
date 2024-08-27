@@ -53,6 +53,7 @@ def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_pat
             ask += 1
             for key in id_q_a: #key[0] = QnA_id,key[1] = Q,key[2] = A
                 for i in range(1, int(test_count)+1):  
+                    answer = None
                     # start time
                     start_time = time.time()
                     # get answer using an Agent or Function --------------------------------------------------------------------------------------------------------------
