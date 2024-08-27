@@ -25,6 +25,7 @@ def load_config(config_file_path):
 def main(question_model, question_count, test_models, test_count, types):
     sys.stdout = open('output.txt', 'w')
     config = load_config('./config.json')
+    print(config)
     ask = 0
     question_model = question_model or config.get("question_model")
     question_count = question_count or config.get("question_count")
