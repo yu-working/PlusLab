@@ -14,6 +14,11 @@ def load_config(config_file_path):
     with open(config_file_path, 'r', encoding='utf-8') as file:
         config = json.load(file)
     return config
+    
+def ensure_list(var):
+    if not isinstance(var, list):
+        return [var]
+    return var
 
 #click
 @click.command()
@@ -25,14 +30,16 @@ def load_config(config_file_path):
 def main(question_model, question_count, test_models, test_count, types):
     sys.stdout = open('output.txt', 'w')
     config = load_config('./config.json')
-    print(config)
     ask = 0
     question_model = question_model or config.get("question_model")
     question_count = question_count or config.get("question_count")
-    test_models = [test_models] or config.get("test_models")
+    test_models = test_models or config.get("test_models")
     test_count = test_count or config.get("test_count")
-    types = [types] or config.get("types")
+    types = types or config.get("types")
     result_csv_path = config.get("result_csv_path")
+    #ensure_list
+    test_models = ensure_list(test_models)
+    types = ensure_list(types)
 
     # dataset.csv
     dataset_path = config.get("dataset_path")
