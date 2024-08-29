@@ -61,7 +61,7 @@ AZURE_API_VERSION=2023-05-15
     - `dataset.csv` - 測試資料集
 
 > [!IMPORTANT]
-> Large datasets may increase the probability of program failure due to errors.
+> 過大的資料集可能提升程式因錯誤中斷的風險
 
 ### 移動到專案內
 
