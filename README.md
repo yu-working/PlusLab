@@ -2,9 +2,10 @@
 
 > PlusLab 是一個專門設計用於測試和比較語言模型性能的工具。
 
-PlusLab允許用戶指定問題生成模型和測試模型，並進行多次測試，以評估模型在不同設定下的表現。PlusLab 基於 akasha-plus 套件開發，提供靈活的配置選項來定義問題生成和測試模型的設置。通過使用 PlusLab，用戶可以方便地生成問題，運行模型測試，並有效地存儲和分析測試結果。
+PlusLab允許用戶指定問題生成模型和測試模型，並進行多次測試，以評估模型在不同設定下的表現。PlusLab 基於 akasha-plus 套件開發，提供靈活的配置選項來定義問題生成和測試模型的設置。通過使用 PlusLab，用戶可更加便捷快速地生成問題、運行模型測試，並存儲和分析測試結果。
 
-- [更多關於akasha-plus](https://pypi.org/project/akasha-plus/)
+> [!NOTE] 
+> [更多關於akasha-plus](https://pypi.org/project/akasha-plus/)
 
 
 
@@ -42,26 +43,27 @@ AZURE_API_VERSION=2023-05-15
   "dataset_path": "./dataset"
 }
 ```
-| 欄位         | 說明 | 預設值 |
+| 欄位         | 說明 | 參考預設值 |
 | ---                  | ---------------------------- | ---    |
 | `"result_csv_path"`   | 測試結果儲存位置與檔案名稱     | `"./result.csv"` |
 | `"question_model"`    | 出題語言模型                  | `"openai:gpt-4"`|
 | `"question_count"`    | 問題數                       | `1`|
-| `"test_models"`        | 測試模行列表                     | `["openai:gpt-35-turbo","openai:gpt-4"]` |
+| `"test_models"`        | 測試模行列表                 | `["openai:gpt-35-turbo","openai:gpt-4"]` |
 | `"test_count"`        | 每題各組合測試次數            | `5`|
 | `"function_or_agent"` | 使用function或是agent進行測試| `["function","agent"]`|
 
-> **注意：請確保`.env`與`config.json`欄位名稱和欄位順序與上述格式一致。**
+> [!IMPORTANT] 
+> 注意：請確保`.env`與`config.json`欄位名稱和欄位順序與上述格式一致。
 
 ### 資料夾說明
 
 - `config.json` - 測試設定檔
 - `.env` - 環境變數設定檔
 - `data` - 資料集放置處
-    - `dataset.csv` - 測試資料集
+    - `your_dataset.csv` - 測試資料集
 
-> [!IMPORTANT]
-> 過大的資料集可能提升程式因錯誤中斷的風險
+> [!NOTE]
+> 過大的資料集可能提升程式因錯誤而中斷測試的可能
 
 ### 移動到專案內
 
@@ -72,7 +74,7 @@ cd ./path/to/your/desired/folder
 ### 測試
 
 ```
-# 測試所有模型
+# 測試所有組合
 pluslab
 ```
 
@@ -97,7 +99,7 @@ pluslab --model your-model
 # --type : 選擇使用function、agent
 pluslab --type agent
 
-# --test-count : 指定單個組合的測試次數，預設為5次
+# --test-count : 指定單個組合的測試次數
 pluslab --count 10
 ```
 
@@ -121,7 +123,7 @@ result.csv欄位如下:
 | 提問ID       | 提問ID |
 | 提問         | 隨機生成的提問 |
 | 預設答案      | 隨機生成對應的回答 |
-| 測試ID       | {組合臨時編號}{提問ID}{測試次數} |
+| 測試ID       | 臨時編號 |
 | LLM回答      | 經過組合運算後輸出的答案 |
 | 準確與否      | 透過語言模型判斷是否LLM回答準確度，若準確則顯示`1`，反之則顯示`0` |
 | 耗時         | 每次運算過程中所用的時間 |
