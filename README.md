@@ -60,6 +60,9 @@ AZURE_API_VERSION=2023-05-15
 - `data` - 資料集放置處
     - `dataset.csv` - 測試資料集
 
+> [!IMPORTANT]
+> Large datasets may increase the probability of program failure due to errors.
+
 ### 移動到專案內
 
 ```bash
