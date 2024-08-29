@@ -44,13 +44,14 @@ AZURE_API_VERSION=2023-05-15
 }
 ```
 | 欄位         | 說明 | 參考預設值 |
-| ---                  | ---------------------------- | ---    |
+| ---                   | ---------------------------- | ---    |
 | `"result_csv_path"`   | 測試結果儲存位置與檔案名稱     | `"./result.csv"` |
 | `"question_model"`    | 出題語言模型                  | `"openai:gpt-4"`|
 | `"question_count"`    | 問題數                       | `1`|
-| `"test_models"`        | 測試模行列表                 | `["openai:gpt-35-turbo","openai:gpt-4"]` |
+| `"test_models"`       | 測試模行列表                  | `["openai:gpt-35-turbo","openai:gpt-4"]` |
 | `"test_count"`        | 每題各組合測試次數            | `5`|
-| `"function_or_agent"` | 使用function或是agent進行測試| `["function","agent"]`|
+| `"function_or_agent"` | 使用function或是agent進行測試 | `["function","agent"]`|
+| `"dataset_path"`      | 測試資料集路徑                | `"./result.csv"` |
 
 > [!IMPORTANT] 
 > 注意：請確保`.env`與`config.json`欄位名稱和欄位順序與上述格式一致。
