@@ -124,6 +124,7 @@ def question_template(question_type, columns, generate_data, table_name):
         question_type = content["question_type"]
         col = content["col"]
         ans_data = content["result"]
+        feature = content["feature"]
         string_col = columns.copy()
         string_col.remove(col)
         if question_type == 'select': #V
@@ -139,17 +140,12 @@ def question_template(question_type, columns, generate_data, table_name):
             question_sentence = f'請問資料表{table_name}中 ，{col}總和是多少？'
             question_sentence_list.append(question_sentence)
         elif question_type == 'order':
-            featurelist = []
-            string_col_len = len(string_col)
-            for i in range(string_col_len//2):
-                feature = random.choice(string_col)
-                featurelist.append(feature)
-                string_col.remove(feature)
-            question_sentence = f'請問資料表{table_name}中 ，依照{col}由大到小進行排序，前五名是哪些{featurelist}？'
+            question_sentence = f'請問資料表{table_name}中 ，依照{col}由大到小進行排序，前五名是哪些{feature}？'
             question_sentence_list.append(question_sentence)
     return question_sentence_list
 
 def get_random_column_and_generate_sql(single_generate_data, table_name, columns, checked_colist):
+    feature = []
     if single_generate_data["question_type"] == 'select':
         col = random.choice(columns)
         gen_sql = f'SELECT * FROM "{table_name}" LIMIT 1 OFFSET ABS(RANDOM()) % (SELECT COUNT(*) FROM "{table_name}");'
@@ -166,10 +162,18 @@ def get_random_column_and_generate_sql(single_generate_data, table_name, columns
         gen_sql = f'SELECT SUM({col}) AS total FROM "{table_name}";'
     elif single_generate_data["question_type"] == 'order':
         col = random.choice(checked_colist)
-        gen_sql = f'SELECT * FROM "{table_name}" ORDER BY {col} DESC LIMIT 5;'
+        string_col = columns.copy()
+        string_col.remove(col)
+        string_col_len = len(string_col)
+        for i in range(string_col_len//2):
+            feature_temp = random.choice(string_col)
+            feature.append(feature_temp)
+            string_col.remove(feature_temp)
+            feature_str = ', '.join(feature)
+        gen_sql = f'SELECT {feature_str} FROM "{table_name}" ORDER BY {col} DESC LIMIT 5;'
     else:
         raise ValueError('Invalid question_type')
-    return gen_sql, col
+    return gen_sql, col, feature
 
 def get_query_result_from_sql(generate_data, database ='database.db'):
     result_list = []
@@ -225,16 +229,16 @@ def generate_questions(dataset_path, files, question_model, question_count, conn
             question_type = random.choice(question_types)
         update_generate_data(generate_data, id, question_type)
         # get random column and generate sql
-        gen_sql, col = get_random_column_and_generate_sql(generate_data[id], table_name, columns, checked_colist)
-        update_generate_data(generate_data, id, question_type, col, gen_sql, result=None, question_sentence=None)
+        gen_sql, col, feature = get_random_column_and_generate_sql(generate_data[id], table_name, columns, checked_colist)
+        update_generate_data(generate_data, id, question_type, col, feature, gen_sql, result=None, question_sentence=None)
     # get all sql query result
     result_list = get_query_result_from_sql(generate_data)
     for k in range(1,id+1):
-        update_generate_data(generate_data, k, result = result_list[k-1], question_type=None, col=None, gen_sql=None, question_sentence=None)
+        update_generate_data(generate_data, k, result = result_list[k-1], question_type=None, col=None, feature=None, gen_sql=None, question_sentence=None)
     # get question from question template, columns and answer
     question_sentence_list = question_template(question_type, columns, generate_data, table_name)
     for k in range(1,id+1):
-        update_generate_data(generate_data, k,  question_sentence = question_sentence_list[k-1], question_type=None, col=None, gen_sql=None, result =None)
+        update_generate_data(generate_data, k,  question_sentence = question_sentence_list[k-1], question_type=None, col=None, feature=None, gen_sql=None, result =None)
     return generate_data
 
 '''#generate data format
@@ -259,17 +263,20 @@ def add_id(generate_data, id):
     generate_data[id] = {
         "question_type": None,
         "col": None,
+        "feature":None,
         "gen_sql": None,
         "result": None,
         "question_sentence": None,
     }
 
-def update_generate_data(generate_data, id, question_type=None, col=None, gen_sql=None, result=None, question_sentence=None):
+def update_generate_data(generate_data, id, question_type=None, col=None, feature=None, gen_sql=None, result=None, question_sentence=None):
     if id in generate_data:
         if question_type is not None:
             generate_data[id]['question_type'] = question_type
         if col is not None:
-            generate_data[id]['col'] = col  
+            generate_data[id]['col'] = col
+        if feature is not None:
+            generate_data[id]['feature'] = feature
         if gen_sql is not None:
             generate_data[id]['gen_sql'] = gen_sql
         if result is not None:
@@ -277,7 +284,7 @@ def update_generate_data(generate_data, id, question_type=None, col=None, gen_sq
         if question_sentence is not None:
             generate_data[id]['question_sentence'] = question_sentence
     else:
-        print(f"題號 {id} 不存在")
+        raise f"題號 {id} 不存在"
 
 
 
