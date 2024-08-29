@@ -145,7 +145,7 @@ def question_template(question_type, columns, generate_list, table_name):
 def get_random_column_and_generate_sql(generate_list, table_name, columns, checked_colist):
     if generate_list[1] == 'select':
         col = random.choice(columns)
-        gen_sql = f'SELECT * FROM {table_name} LIMIT 1 OFFSET ABS(RANDOM()) % (SELECT COUNT(*) FROM {table_name});'
+        gen_sql = f'SELECT * FROM "{table_name}" LIMIT 1 OFFSET ABS(RANDOM()) % (SELECT COUNT(*) FROM "{table_name}");'
     elif generate_list[1] == 'vs':
         col = random.choice(checked_colist)
         gen_sql = f'SELECT * FROM "{table_name}" ORDER BY RANDOM() LIMIT 2;'
@@ -167,6 +167,7 @@ def get_query_result_from_sql(generate_list, database ='database.db'):
     try:
         # 3. 執行查詢
         for index, query in enumerate(generate_list):
+            print(query[3])
             cursor.execute(query[3])
             # 4. 獲取結果
             ans = cursor.fetchall()
