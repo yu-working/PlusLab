@@ -68,7 +68,7 @@ def test(test_models, test_count, types, ask, generate_data, table_name, result_
                     question = content['question_sentence']
                     model_answer = content['result']
                     answer = None
-
+                    remark = "-"
                     # start time
                     start_time = time.time()
                     # get answer using an Agent or Function --------------------------------------------------------------------------------------------------------------
@@ -76,7 +76,8 @@ def test(test_models, test_count, types, ask, generate_data, table_name, result_
                         try:
                             answer = db_query_func(question=question, table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
                         except Exception as e:
-                            answer = f"generate failed : {e}"
+                            answer = f"generate failed"
+                            remark = e
                     elif type == "agent":
                         try:
                             agent = akasha.test_agent(verbose=True, tools=[db_query_tool], model=test_model) 
@@ -87,7 +88,8 @@ def test(test_models, test_count, types, ask, generate_data, table_name, result_
                                     # let akasha agent to consider the rest of the process       
                             answer = agent(question_prompt, messages=[])
                         except Exception as e:
-                            answer = f"generate failed : {e}"
+                            answer = f"generate failed"
+                            remark = e
                     else:
                         raise 'wrong type'
 
@@ -113,7 +115,7 @@ def test(test_models, test_count, types, ask, generate_data, table_name, result_
                                 '準確與否': yn,
                                 '耗時': execution_time,
                                 'token': tokens,
-                                '備註': "-",
+                                '備註': remark,
                             })
                     temp_tokens = now_tokens
     result_format_df = pd.concat([result_format_df, pd.DataFrame(results)], ignore_index=True).astype(object)
