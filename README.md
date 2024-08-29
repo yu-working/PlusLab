@@ -63,7 +63,7 @@ AZURE_API_VERSION=2023-05-15
 - `data` - 資料集放置處
     - `your_dataset.csv` - 測試資料集
 
-> [!NOTE]
+> [!TIP]
 > 過大的資料集可能提升程式因錯誤而中斷測試的可能
 
 ### 移動到專案內
