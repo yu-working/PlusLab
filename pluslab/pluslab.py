@@ -49,35 +49,39 @@ def main(question_model, question_count, test_models, test_count, types):
     if files:
         create_or_update_table(dataset_path, files)
     connection_config = set_database_connection()
-    id_q_a = generate_questions(dataset_path, files, question_model, question_count, connection_config)
+    generate_data = generate_questions(dataset_path, files, question_model, question_count, connection_config)
     _, _, table_name = create_or_update_table(dataset_path, files)
     get_or_create_result_csv(result_csv_path)
-    test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_path, connection_config)
+    test(test_models, test_count, types, ask, generate_data, table_name, result_csv_path, connection_config)
     
-def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_path, connection_config):
+def test(test_models, test_count, types, ask, generate_data, table_name, result_csv_path, connection_config):
     result_format_df = get_or_create_result_csv(result_csv_path)
     temp_tokens = token()
     results = []
     for test_model in test_models:
         for type in types:
             ask += 1
-            for key in id_q_a: #key[0] = QnA_id,key[1] = Q,key[2] = A
+            for index, (id, content) in enumerate(generate_data.items()):
                 for i in range(1, int(test_count)+1):
                     print(type)
+                    id = id
+                    question = content['question_sentence']
+                    model_answer = content['result']
                     answer = None
+
                     # start time
                     start_time = time.time()
                     # get answer using an Agent or Function --------------------------------------------------------------------------------------------------------------
                     if type == "function" :
-                        answer = db_query_func(question=key[1], table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
+                        answer = db_query_func(question=question, table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
                     elif type == "agent":
                         agent = akasha.test_agent(verbose=True, tools=[db_query_tool], model=test_model) 
-                        question = f'''
+                        question_prompt = f'''
                                 我要查詢一個"SQLITE"資料庫 名為 "database.db", 裡面有一個table={table_name},
-                                {key[1]}
+                                {question}
                                 '''
                                 # let akasha agent to consider the rest of the process       
-                        answer = agent(question, messages=[])
+                        answer = agent(question_prompt, messages=[])
                     else:
                         raise 'wrong type'
 
@@ -89,16 +93,16 @@ def test(test_models, test_count, types, ask, id_q_a, table_name, result_csv_pat
                     tokens = now_tokens - temp_tokens
                     #y/n
                     if answer is not None:
-                        yn = verify_response(key, answer)
+                        yn = verify_response(content, answer)
                     else:
                         raise "Answer generation failed."
                     # data
                     results.append({
                                 '組合':test_model + " + " + type,
-                                '提問ID':f'Q{int(key[0])+1}',
-                                '提問':key[1],
-                                '預設答案':key[2],
-                                '測試ID': ask*10000 + int(key[0])*100 + i,
+                                '提問ID':f'Q{int(id)}',
+                                '提問':question,
+                                '預設答案':model_answer,
+                                '測試ID': ask*10000 + int(id)*100 + i,
                                 'LLM回答': answer,
                                 '準確與否': yn,
                                 '耗時': execution_time,
@@ -114,72 +118,82 @@ def get_df(dataset_df):
         return dataset_df[col].dtype == 'int64'
     return check
 
-def question_template(question_type, columns, generate_list, table_name):
-    print(generate_list)
-    for index, gentime in enumerate(generate_list):
-        question_type = gentime[1]
-        col = gentime[2]
-        ans_data = gentime[4]# V
+def question_template(question_type, columns, generate_data, table_name):
+    question_sentence_list = []
+    for index, (id, content) in enumerate(generate_data.items()):
+        question_type = content["question_type"]
+        col = content["col"]
+        ans_data = content["result"]
         string_col = columns.copy()
         string_col.remove(col)
-        if question_type == 'select':  
+        if question_type == 'select': #V
             df = pd.DataFrame(ans_data, columns=columns)
-            for inx, row in df.iterrows():
-                string = ', '.join([f"{col}: {row[col]}" for col in string_col])
-            question_sentence = f'請問資料表 {table_name} 中，{string}的{col}為何?'
-            gentime.append(question_sentence)
+            for inx, row in df.iterrows(): 
+                string = '\nand\n'.join([f"{col}={row[col]}" for col in string_col])
+            question_sentence = f'請問資料表{table_name}中，符合下列條件:{string}的{col}為何?'
+            question_sentence_list.append(question_sentence)
         elif question_type =='vs':
-            df = pd.DataFrame(ans_data, columns=columns)
-            for index, row in df.iterrows():
-                string = ', '.join([f"{col}: {row[col]}" for col in string_col])
-            question_sentence = f'請問資料表 {table_name} 中，{string}這兩筆資料的{col}相差多少?'
-            gentime.append(question_sentence)
-        elif question_type == 'sum':
-            question_sentence = f'請問資料表 {table_name} 中 ，{col} 列的總和是多少？'
-            gentime.append(question_sentence)
+            question_sentence = f'請問資料表{table_name}中，{col}由大到小進行排序，第一名與第五名相差多少?'
+            question_sentence_list.append(question_sentence)
+        elif question_type == 'sum': #V
+            question_sentence = f'請問資料表{table_name}中 ，{col}總和是多少？'
+            question_sentence_list.append(question_sentence)
         elif question_type == 'order':
-            question_sentence = f'請問資料表 {table_name} 中 ，{col} 列的前五條記錄是什麼？'
-            gentime.append(question_sentence)
-    return question_sentence
+            featurelist = []
+            string_col_len = len(string_col)
+            for i in range(string_col_len//2):
+                feature = random.choice(string_col)
+                featurelist.append(feature)
+                string_col.remove(feature)
+            question_sentence = f'請問資料表{table_name}中 ，依照{col}由大到小進行排序，前五名是哪些{featurelist}？'
+            question_sentence_list.append(question_sentence)
+    return question_sentence_list
 
-def get_random_column_and_generate_sql(generate_list, table_name, columns, checked_colist):
-    if generate_list[1] == 'select':
+def get_random_column_and_generate_sql(single_generate_data, table_name, columns, checked_colist):
+    if single_generate_data["question_type"] == 'select':
         col = random.choice(columns)
         gen_sql = f'SELECT * FROM "{table_name}" LIMIT 1 OFFSET ABS(RANDOM()) % (SELECT COUNT(*) FROM "{table_name}");'
-    elif generate_list[1] == 'vs':
+    elif single_generate_data["question_type"] == 'vs':
         col = random.choice(checked_colist)
-        gen_sql = f'SELECT * FROM "{table_name}" ORDER BY RANDOM() LIMIT 2;'
-    elif generate_list[1] == 'sum':
+        gen_sql = f'''SELECT 
+                        (SELECT {col} FROM (SELECT {col}, ROW_NUMBER() OVER (ORDER BY {col} DESC) AS rank FROM {table_name}) 
+                        AS ranked WHERE rank = 1) -
+                        (SELECT {col} FROM (SELECT {col}, ROW_NUMBER() OVER (ORDER BY {col} DESC) AS rank FROM {table_name}) 
+                        AS ranked WHERE rank = 5) AS {col}_difference;
+                        '''
+    elif single_generate_data["question_type"] == 'sum':
         col = random.choice(checked_colist)
         gen_sql = f'SELECT SUM({col}) AS total FROM "{table_name}";'
-    elif generate_list[1] == 'order':
+    elif single_generate_data["question_type"] == 'order':
         col = random.choice(checked_colist)
         gen_sql = f'SELECT * FROM "{table_name}" ORDER BY {col} DESC LIMIT 5;'
     else:
         raise ValueError('Invalid question_type')
     return gen_sql, col
 
-def get_query_result_from_sql(generate_list, database ='database.db'):
+def get_query_result_from_sql(generate_data, database ='database.db'):
+    result_list = []
     # 1. 連接到 SQLite 資料庫
     conn = sqlite3.connect(database)
     # 2. 創建一個游標對象
     cursor = conn.cursor()
     try:
         # 3. 執行查詢
-        for index, query in enumerate(generate_list):
-            print(query[3])
-            cursor.execute(query[3])
+        for index in generate_data:
+            cursor.execute(generate_data[index]["gen_sql"])
             # 4. 獲取結果
-            ans = cursor.fetchall()
+            result = cursor.fetchall()
             # 輸出結果
-            generate_list[index].append(ans)
+            result_list.append(result)
     except sqlite3.Error as e:
         raise e
     finally:
         # 5. 關閉游標和連接
         cursor.close()
         conn.close()
-    return generate_list
+    return result_list
+
+
 
 def generate_questions(dataset_path, files, question_model, question_count, connection_config):
     dataset_df, columns, table_name = create_or_update_table(dataset_path, files)
@@ -200,26 +214,72 @@ def generate_questions(dataset_path, files, question_model, question_count, conn
     check = get_df(dataset_df)
     checked_colist = list(filter(check, colist)) 
     #get question_type from table_type(select or other)
-    generate_list = []
+    generate_data = {}
     for qtime in range(int(question_count)):
-        generate_list.append([qtime])
+        id = qtime+1
+        add_id(generate_data, id)
         if table_type == "0":
             question_type = 'select'
         else:
             question_types = ['sum','order','vs']
             question_type = random.choice(question_types)
-        generate_list[qtime].append(question_type)
+        update_generate_data(generate_data, id, question_type)
         # get random column and generate sql
-        gen_sql, col = get_random_column_and_generate_sql(generate_list[qtime], table_name, columns, checked_colist)
-        generate_list[qtime].append(col)
-        generate_list[qtime].append(gen_sql)
+        gen_sql, col = get_random_column_and_generate_sql(generate_data[id], table_name, columns, checked_colist)
+        update_generate_data(generate_data, id, question_type, col, gen_sql, result=None, question_sentence=None)
     # get all sql query result
-    get_query_result_from_sql(generate_list)
+    result_list = get_query_result_from_sql(generate_data)
+    for k in range(1,id+1):
+        update_generate_data(generate_data, k, result = result_list[k-1], question_type=None, col=None, gen_sql=None, question_sentence=None)
     # get question from question template, columns and answer
-    question_template(question_type, columns, generate_list, table_name)
-    id_q_a = [[sublist[0], sublist[-1], sublist[4]] for sublist in generate_list]
-    print(id_q_a)
-    return id_q_a
+    question_sentence_list = question_template(question_type, columns, generate_data, table_name)
+    for k in range(1,id+1):
+        update_generate_data(generate_data, k,  question_sentence = question_sentence_list[k-1], question_type=None, col=None, gen_sql=None, result =None)
+    return generate_data
+
+'''#generate data format
+generate_data = {
+    "1": { #qtime
+        "type": "sum",
+        "col": "A",
+        "SQL": "SELECT * FROM "{table_name}" ORDER BY RANDOM() LIMIT 2",
+        "result": "這是答案的示例。",
+        "question_sentence": "這是一個問題的示例？",
+    },
+    "2": {
+        "type": "order",
+        col": "time",
+        "SQL": "SELECT * FROM "{table_name}" ORDER BY RANDOM() LIMIT 2",
+        "result": "這是另一個答案的示例。",
+        "question_sentence": "這是另一個問題的示例？",
+    }
+}
+'''
+def add_id(generate_data, id):
+    generate_data[id] = {
+        "question_type": None,
+        "col": None,
+        "gen_sql": None,
+        "result": None,
+        "question_sentence": None,
+    }
+
+def update_generate_data(generate_data, id, question_type=None, col=None, gen_sql=None, result=None, question_sentence=None):
+    if id in generate_data:
+        if question_type is not None:
+            generate_data[id]['question_type'] = question_type
+        if col is not None:
+            generate_data[id]['col'] = col  
+        if gen_sql is not None:
+            generate_data[id]['gen_sql'] = gen_sql
+        if result is not None:
+            generate_data[id]['result'] = result
+        if question_sentence is not None:
+            generate_data[id]['question_sentence'] = question_sentence
+    else:
+        print(f"題號 {id} 不存在")
+
+
 
 def token():
     try:
@@ -233,14 +293,14 @@ def token():
     now_tokens = model_obj.get_num_tokens(question_content)
     return now_tokens
 
-def verify_response(key, answer):
+def verify_response(content, answer):
     ak = akasha.Doc_QA(
         verbose=True,
         max_doc_len=15000,
         model="openai:gpt-4",
     )
-    data = f'測試輸出:"{key[2]}"、標準答案:"{answer}"'
-    #yn = ak.ask_self(prompt=f"根據{data}，判斷測試輸出與標準答案是否極為相似，回答判斷結果與原因。", info = data)
+    ma = content['result']
+    data = f'測試輸出:"{answer}"、標準答案:"{ma}"'
     yn = ak.ask_self(prompt=f"根據{data}，判斷測試輸出與標準答案是否極為相似，給予值0或是1，嚴禁出現數字以外的回覆。", info = data)
     return yn
 
