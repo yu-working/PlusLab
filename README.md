@@ -37,7 +37,7 @@ AZURE_API_VERSION=2023-05-15
   "question_model":"openai:gpt-4",
   "question_count": 1,
   "test_models":["openai:gpt-35-turbo","openai:gpt-4"],
-  "test_count": 2,
+  "test_count": 5,
   "types": ["function","agent"],
   "dataset_path": "./dataset"
 }
@@ -116,8 +116,8 @@ result.csv欄位如下:
 | ------------ | ----- |
 | 組合         | `test-model` + `type` |
 | 提問ID       | 提問ID |
-| 提問         | 由`question_model`生成的提問 |
-| 預設答案      | 由`question_model`生成的回答 |
+| 提問         | 隨機生成的提問 |
+| 預設答案      | 隨機生成對應的回答 |
 | 測試ID       | {組合臨時編號}{提問ID}{測試次數} |
 | LLM回答      | 經過組合運算後輸出的答案 |
 | 準確與否      | 透過語言模型判斷是否LLM回答準確度，若準確則顯示`1`，反之則顯示`0` |
