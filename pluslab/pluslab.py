@@ -73,15 +73,21 @@ def test(test_models, test_count, types, ask, generate_data, table_name, result_
                     start_time = time.time()
                     # get answer using an Agent or Function --------------------------------------------------------------------------------------------------------------
                     if type == "function" :
-                        answer = db_query_func(question=question, table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
+                        try:
+                            answer = db_query_func(question=question, table_name=table_name, simplified_answer=True, connection_config=connection_config, model=test_model)
+                        except Exception as e:
+                            answer = f"generate failed : {e}"
                     elif type == "agent":
-                        agent = akasha.test_agent(verbose=True, tools=[db_query_tool], model=test_model) 
-                        question_prompt = f'''
-                                我要查詢一個"SQLITE"資料庫 名為 "database.db", 裡面有一個table={table_name},
-                                {question}
-                                '''
-                                # let akasha agent to consider the rest of the process       
-                        answer = agent(question_prompt, messages=[])
+                        try:
+                            agent = akasha.test_agent(verbose=True, tools=[db_query_tool], model=test_model) 
+                            question_prompt = f'''
+                                    我要查詢一個"SQLITE"資料庫 名為 "database.db", 裡面有一個table={table_name},
+                                    {question}
+                                    '''
+                                    # let akasha agent to consider the rest of the process       
+                            answer = agent(question_prompt, messages=[])
+                        except Exception as e:
+                            answer = f"generate failed : {e}"
                     else:
                         raise 'wrong type'
 
