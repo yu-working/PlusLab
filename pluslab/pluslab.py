@@ -138,7 +138,7 @@ def question_template(question_type, columns, generate_data, table_name):
         if question_type == 'select': #V
             df = pd.DataFrame(ans_data, columns=columns)
             for inx, row in df.iterrows(): 
-                string = '\nand\n'.join([f"{col}={row[col]}" for col in string_col])
+                string = ' and '.join([f"{col}={row[col]}" for col in string_col])
             question_sentence = f'請問資料表{table_name}中，符合下列條件:{string}的{col}為何?'
             question_sentence_list.append(question_sentence)
         elif question_type =='vs':
