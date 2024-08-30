@@ -211,7 +211,7 @@ def generate_questions(dataset_path, files, question_model, question_count, conn
     try:
         dataset_df, columns, table_name = create_or_update_table(dataset_path, files)
     except UnboundLocalError:
-        raise "Can't find dataset")
+        raise "Can't find dataset"
     #new
     ak = akasha.Doc_QA(
         verbose=True,
