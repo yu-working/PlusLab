@@ -208,7 +208,10 @@ def get_query_result_from_sql(generate_data, database ='database.db'):
 
 
 def generate_questions(dataset_path, files, question_model, question_count, connection_config):
-    dataset_df, columns, table_name = create_or_update_table(dataset_path, files)
+    try:
+        dataset_df, columns, table_name = create_or_update_table(dataset_path, files)
+    except UnboundLocalError:
+        raise "Can't find dataset")
     #new
     ak = akasha.Doc_QA(
         verbose=True,
